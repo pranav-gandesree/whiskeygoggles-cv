@@ -1,7 +1,7 @@
 import sys
 import os
 
-base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+base_dir = os.path.abspath(os.path.dirname(__file__))  # Use the directory of this script
 sys.path.insert(0, base_dir)
 
 from flask import Flask, request, render_template, redirect, url_for, flash
@@ -15,31 +15,33 @@ app = Flask(__name__)
 app.secret_key = 'whiskygoggles_secret_key'  # For flash messages
 matcher = None  # Initialize as None at module level
 
+# Define the correct paths based on the base directory
+STATIC_DIR = os.path.join(base_dir, 'web/static')
+UPLOADS_DIR = os.path.join(STATIC_DIR, 'uploads')
+IMAGES_DIR = os.path.join(STATIC_DIR, 'images')
+DATA_DIR = os.path.join(base_dir, 'data')
+
 # Create necessary directories if they don't exist
 def create_directories():
-    os.makedirs("web/static/uploads", exist_ok=True)
-    os.makedirs("web/static/images", exist_ok=True)
+    os.makedirs(UPLOADS_DIR, exist_ok=True)
+    os.makedirs(IMAGES_DIR, exist_ok=True)
 
 def init_matcher():
     global matcher
     if matcher is None:
-        matcher = BottleMatcher("data/dataset.csv", "data/images")
+        matcher = BottleMatcher(os.path.join(DATA_DIR, "dataset.csv"), os.path.join(DATA_DIR, "images"))
         # Copy dataset images to static folder for web display
         copy_dataset_images()
 
 def copy_dataset_images():
     """Copy dataset images to static folder for web display"""
-    dataset_images_dir = "data/images"
-    web_images_dir = "web/static/images"
-    
-    # Create the web images directory if it doesn't exist
-    os.makedirs(web_images_dir, exist_ok=True)
+    dataset_images_dir = os.path.join(DATA_DIR, "images")
     
     # Copy all images from dataset to web static folder
     for filename in os.listdir(dataset_images_dir):
         if filename.endswith(".jpg") or filename.endswith(".png"):
             src_path = os.path.join(dataset_images_dir, filename)
-            dst_path = os.path.join(web_images_dir, filename)
+            dst_path = os.path.join(IMAGES_DIR, filename)
             # Only copy if file doesn't exist or is newer
             if not os.path.exists(dst_path) or os.path.getmtime(src_path) > os.path.getmtime(dst_path):
                 shutil.copy2(src_path, dst_path)
@@ -82,7 +84,7 @@ def index():
             
             # Generate a unique filename to prevent conflicts
             unique_filename = f"{uuid.uuid4().hex}_{file.filename}"
-            upload_path = os.path.join('web/static/uploads', unique_filename)
+            upload_path = os.path.join(UPLOADS_DIR, unique_filename)
             
             # Save the uploaded file
             file.save(upload_path)
@@ -105,7 +107,7 @@ def index():
             }
             
             pricing_df = pd.DataFrame([pricing_data])
-            pricing_file = "data/pricing_data.csv"
+            pricing_file = os.path.join(DATA_DIR, "pricing_data.csv")
             if os.path.exists(pricing_file):
                 pricing_df.to_csv(pricing_file, mode='a', header=False, index=False)
             else:
