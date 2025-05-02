@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhiskyGoggles - Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .uploaded-image {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto 20px;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .matches-container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .match-card {
+            width: 30%;
+            min-width: 200px;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            background-color: #fafafa;
+            transition: transform 0.2s;
+        }
+        .match-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .match-image {
+            width: 100%;
+            height: 200px;
+            object-fit: contain;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .match-details {
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        .confidence-high {
+            color: #2ecc71;
+            font-weight: bold;
+        }
+        .confidence-medium {
+            color: #f39c12;
+            font-weight: bold;
+        }
+        .confidence-low {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        a.button {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px 15px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        a.button:hover {
+            background-color: #2980b9;
+            text-decoration: none;
+        }
+        .section-title {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+            margin-top: 25px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>WhiskyGoggles Results</h1>
+        
+        <h2 class="section-title">Your Uploaded Image</h2>
+        <img class="uploaded-image" src="{{ url_for('static', filename=image_path.replace('static/', '')) }}" alt="Uploaded Whisky Bottle">
+        
+        <h2 class="section-title">Top Matches</h2>
+        <div class="matches-container">
+            {% for match in matches %}
+                <div class="match-card">
+                    <img class="match-image" src="{{ url_for('static', filename='images/' + match.id|string + '.jpg') }}" alt="{{ match.name }}">
+                    <div class="match-details">
+                        <p><strong>{{ match.name }}</strong></p>
+                        <p>Type: {{ match.type }}</p>
+                        {% if match.confidence > 0.8 %}
+                            <p>Confidence: <span class="confidence-high">{{ match.confidence|round(2) }}</span></p>
+                        {% elif match.confidence > 0.6 %}
+                            <p>Confidence: <span class="confidence-medium">{{ match.confidence|round(2) }}</span></p>
+                        {% else %}
+                            <p>Confidence: <span class="confidence-low">{{ match.confidence|round(2) }}</span></p>
+                        {% endif %}
+                        
+                        {% if match.fair_price and match.shelf_price %}
+                            <p>Fair Price: ${{ match.fair_price }}</p>
+                            <p>Shelf Price: ${{ match.shelf_price }}</p>
+                        {% else %}
+                            <p>Prices: Not available</p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <a href="{{ url_for('index') }}" class="button">Back to Search</a>
+    </div>
+</body>
+</html>
